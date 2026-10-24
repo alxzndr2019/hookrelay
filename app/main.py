@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import endpoints, health, whoami
+from app.api import endpoints, health, whoami, events
 
 app = FastAPI(
     title="HookRelay",
@@ -10,3 +10,4 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(whoami.router)
 app.include_router(endpoints.router)
+app.include_router(events.router)

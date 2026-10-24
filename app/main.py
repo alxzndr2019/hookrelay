@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import endpoints, health, whoami, events
+from app.api import endpoints, events, health, whoami
 
 app = FastAPI(
     title="HookRelay",

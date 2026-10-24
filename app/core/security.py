@@ -30,3 +30,5 @@ def parse_key(token: str) -> str | None:
 
 def keys_match(presented_hash: str, stored_hash: str) -> bool:
     return hmac.compare_digest(presented_hash, stored_hash)
+def generate_signing_secret() -> str:
+    return f"whsec_{secrets.token_urlsafe(32)}"

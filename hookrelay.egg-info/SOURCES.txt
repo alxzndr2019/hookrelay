@@ -7,6 +7,7 @@ app/core/__init__.py
 app/core/config.py
 app/db/__init__.py
 app/db/base.py
+app/db/models.py
 app/db/session.py
 hookrelay.egg-info/PKG-INFO
 hookrelay.egg-info/SOURCES.txt

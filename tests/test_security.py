@@ -1,3 +1,5 @@
+import pytest
+
 from app.core.security import generate_api_key, hash_key, keys_match, parse_key
 
 
@@ -11,9 +13,19 @@ def test_keys_are_unique():
     assert generate_api_key()[0] != generate_api_key()[0]
 
 
-def test_malformed_tokens_are_rejected():
-    for bad in ["", "garbage", "hr_live_", "hr_live_abc_def", "hr_live_abcd1234", "hr_live_abcd1234_"]:
-        assert parse_key(bad) is None
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "",
+        "garbage",
+        "hr_live_",
+        "hr_live_abc_def",
+        "hr_live_abcd1234",
+        "hr_live_abcd1234_",
+    ],
+)
+def test_malformed_tokens_are_rejected(bad):
+    assert parse_key(bad) is None
 
 
 def test_hash_comparison():

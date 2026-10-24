@@ -13,3 +13,4 @@ hookrelay.egg-info/SOURCES.txt
 hookrelay.egg-info/dependency_links.txt
 hookrelay.egg-info/requires.txt
 hookrelay.egg-info/top_level.txt
+tests/test_health.py

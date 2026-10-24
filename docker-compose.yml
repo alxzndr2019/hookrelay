@@ -33,5 +33,15 @@ services:
     ports: ["8000:8000"]
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
+  worker:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://hookrelay:hookrelay@postgres:5432/hookrelay
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    command: python -m app.worker
+
 volumes:
   pgdata:

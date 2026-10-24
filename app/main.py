@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import health
+from app.api import health, whoami
 
 app = FastAPI(
     title="HookRelay",
@@ -8,3 +8,4 @@ app = FastAPI(
     description="Reliable multi-tenant webhook delivery service.",
 )
 app.include_router(health.router)
+app.include_router(whoami.router)

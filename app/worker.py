@@ -2,13 +2,15 @@ import asyncio
 import contextlib
 import logging
 import signal
+import uuid
+
 from datetime import timedelta
 
 import httpx
 from sqlalchemy import func, or_, select, update
 
 from app.core.config import get_settings
-from app.db.models import Delivery, DeliveryAttempt, Endpoint, Event
+from app.db.models import Delivery, DeliveryAttempt, Endpoint, EndpointSecret, Event
 from app.db.session import SessionLocal, engine
 from app.delivery import Job, Result, send
 
@@ -41,6 +43,23 @@ async def claim(limit: int, lease_seconds: int) -> list[Job]:
             .where(Delivery.id.in_([d.id for d, _, _ in rows]))
             .values(locked_until=func.now() + timedelta(seconds=lease_seconds))
         )
+
+        endpoint_ids = {ep.id for _, _, ep in rows}
+        secret_rows = (
+            await session.execute(
+                select(EndpointSecret.endpoint_id, EndpointSecret.secret).where(
+                    EndpointSecret.endpoint_id.in_(endpoint_ids),
+                    or_(
+                        EndpointSecret.expires_at.is_(None),
+                        EndpointSecret.expires_at > func.now(),
+                    ),
+                )
+            )
+        ).all()
+        secrets_by_endpoint: dict[uuid.UUID, list[str]] = {}
+        for endpoint_id, secret in secret_rows:
+            secrets_by_endpoint.setdefault(endpoint_id, []).append(secret)
+
         return [
             Job(
                 delivery_id=d.id,
@@ -49,10 +68,10 @@ async def claim(limit: int, lease_seconds: int) -> list[Job]:
                 event_type=ev.event_type,
                 payload=ev.payload,
                 event_created_at=ev.created_at,
+                secrets=tuple(secrets_by_endpoint.get(ep.id, ())),
             )
             for d, ev, ep in rows
         ]
-
 
 async def record(job: Job, result: Result) -> None:
     async with SessionLocal() as session, session.begin():

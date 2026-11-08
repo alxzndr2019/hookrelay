@@ -16,6 +16,7 @@ class Job:
     event_type: str
     payload: dict
     event_created_at: datetime
+    secrets: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -39,10 +40,12 @@ def build_body(job: Job) -> bytes:
 
 async def send(client: httpx.AsyncClient, job: Job, *, timeout: float, body_limit: int) -> Result:
     body = build_body(job)
-    headers = {
+    hheaders = {
         "Content-Type": "application/json",
         "User-Agent": "HookRelay/0.1",
         "Webhook-Id": str(job.event_id),
+        "Webhook-Timestamp": str(timestamp),
+        "Webhook-Signature": sign(job.secrets, str(job.event_id), timestamp, body),
     }
     started = time.monotonic()
     status_code: int | None = None
